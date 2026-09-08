@@ -67,11 +67,6 @@
     flex-direction: column;
     gap: 6px;
   }
-  .quicknav-row{
-    display: flex;
-    align-items: stretch;
-    gap: 6px;
-  }
   .quicknav a{
     flex: 1;
     display: flex;
@@ -93,20 +88,6 @@
     color: var(--stamp-deep);
     flex: none;
   }
-  .quicknav-del{
-    flex: none;
-    min-width: 38px;
-    padding: 0 10px;
-    border: 1px solid rgba(176,141,87,0.45);
-    border-radius: 8px;
-    background: var(--card);
-    color: var(--ink-soft);
-    font-size: 13.5px;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .quicknav-del:hover{ background: #7E2F26; color: #F8F3E4; border-color: #7E2F26; }
-  .quicknav-del.confirming{ background: #7E2F26; color: #F8F3E4; border-color: #7E2F26; font-weight: 700; }
   .back-to-index{
     display: block;
     margin-top: 14px;
@@ -642,27 +623,10 @@ function shopCard(shop, i){
   </article>`;
 }
 
-/* 刪除的店家用 localStorage 記住（用店名當 key），重新整理頁面後仍會保持已刪除的狀態。
-   這只是「在這個瀏覽器裡隱藏」，不會動到上面 shops 陣列的原始資料，
-   如果想恢復，清除瀏覽器的 localStorage（或換一台裝置開啟）就會全部顯示回來。 */
-const DELETED_KEY = "bento-catalog-deleted-v1";
-function loadDeleted(){
-  try { return new Set(JSON.parse(localStorage.getItem(DELETED_KEY) || "[]")); }
-  catch(e){ return new Set(); }
-}
-function saveDeleted(set){
-  try { localStorage.setItem(DELETED_KEY, JSON.stringify([...set])); } catch(e){}
-}
-let deleted = loadDeleted();
-
-function visibleShops(){
-  return shops.filter(s => !deleted.has(s.name));
-}
-
 function render(){
   const list = document.getElementById("list");
-  list.innerHTML = visibleShops().map((s, i) => shopCard(s, i)).join("");
-  document.getElementById("count").textContent = visibleShops().length;
+  list.innerHTML = shops.map((s, i) => shopCard(s, i)).join("");
+  document.getElementById("count").textContent = shops.length;
   list.querySelectorAll("[data-back-to-index]").forEach(a => {
     a.addEventListener("click", (e) => {
       e.preventDefault();
@@ -673,40 +637,14 @@ function render(){
 
 function renderQuickNav(){
   const el = document.getElementById("quicknav");
-  el.innerHTML = visibleShops().map((s, i) => `
-    <div class="quicknav-row">
-      <a data-target="${slugId(i)}"><span class="num">${i+1}號</span><span>${esc(s.name)}</span></a>
-      <button class="quicknav-del" type="button" data-delete-name="${esc(s.name)}" title="從目錄中刪除這間店" aria-label="刪除 ${esc(s.name)}">✕</button>
-    </div>
-  `).join("");
+  el.innerHTML = shops.map((s, i) =>
+    `<a data-target="${slugId(i)}"><span class="num">${i+1}號</span><span>${esc(s.name)}</span></a>`
+  ).join("");
   el.querySelectorAll("a[data-target]").forEach(a => {
     a.addEventListener("click", (e) => {
       e.preventDefault();
       const target = document.getElementById(a.dataset.target);
       if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  });
-  el.querySelectorAll("[data-delete-name]").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      const name = btn.dataset.deleteName;
-      if (btn.dataset.confirming === "1") {
-        clearTimeout(Number(btn.dataset.timerId));
-        deleted.add(name);
-        saveDeleted(deleted);
-        renderQuickNav();
-        render();
-        return;
-      }
-      btn.dataset.confirming = "1";
-      btn.textContent = "確定？";
-      btn.classList.add("confirming");
-      const timerId = setTimeout(() => {
-        btn.dataset.confirming = "0";
-        btn.textContent = "✕";
-        btn.classList.remove("confirming");
-      }, 3000);
-      btn.dataset.timerId = String(timerId);
     });
   });
 }
