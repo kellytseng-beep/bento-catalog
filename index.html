@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>便當目錄</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #EAE0C9;
+    --paper-deep: #E1D4B4;
+    --card: #F8F3E6;
+    --tray: #EFE9DA;
+    --tray-shadow-in: rgba(70,58,38,0.18);
+    --tray-shadow-hi: rgba(255,255,255,0.55);
+    --ink: #332A22;
+    --ink-soft: #6B5F4E;
+    --rim: #B08D57;
+    --stamp: #A23E32;
+    --stamp-deep: #7E2F26;
+    --steel: #7C8A86;
+    --steel-deep: #56635F;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at top left, var(--paper-deep), var(--paper) 60%);
+    color: var(--ink);
+    font-family: 'Noto Sans TC', sans-serif;
+    line-height: 1.6;
+    padding: 0 0 80px;
+  }
+
+  a { color: inherit; }
+
+  /* ---------- Header ---------- */
+  header{
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 24px 24px;
+    text-align: left;
+  }
+  header h1{
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 900;
+    font-size: clamp(32px, 6vw, 46px);
+    margin: 0;
+    letter-spacing: 0.02em;
+  }
+  header .rule{
+    height: 3px;
+    margin-top: 20px;
+    background: repeating-linear-gradient(90deg, var(--rim), var(--rim) 10px, transparent 10px, transparent 16px);
+    opacity: 0.6;
+  }
+
+  /* ---------- Quick jump nav ---------- */
+  .quicknav{
+    max-width: 780px;
+    margin: 20px auto 0;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .quicknav-row{
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .quicknav a{
+    flex: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 15px;
+    text-decoration: none;
+    color: var(--ink);
+    padding: 8px 14px;
+    border: 1px solid rgba(176,141,87,0.45);
+    border-radius: 8px;
+    background: var(--card);
+    cursor: pointer;
+  }
+  .quicknav a:hover{ background: var(--paper-deep); }
+  .quicknav .num{
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 900;
+    color: var(--stamp-deep);
+    flex: none;
+  }
+  .quicknav-del{
+    flex: none;
+    min-width: 38px;
+    padding: 0 10px;
+    border: 1px solid rgba(176,141,87,0.45);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .quicknav-del:hover{ background: #7E2F26; color: #F8F3E4; border-color: #7E2F26; }
+  .quicknav-del.confirming{ background: #7E2F26; color: #F8F3E4; border-color: #7E2F26; font-weight: 700; }
+  .back-to-index{
+    display: block;
+    margin-top: 14px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--steel-deep);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .back-to-index:hover{ text-decoration: underline; }
+
+  /* ---------- Shop list ---------- */
+  main{
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 32px 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .shop{
+    background: var(--card);
+    border: 1px solid rgba(176,141,87,0.4);
+    border-radius: 6px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 10px 24px rgba(70,58,38,0.10);
+    overflow: hidden;
+    scroll-margin-top: 20px;
+  }
+
+  .shop-head{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 26px 26px 18px;
+    border-bottom: 1px dashed rgba(176,141,87,0.55);
+  }
+  .shop-head .titles{ min-width: 0; }
+  .shop-name{
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 900;
+    font-size: clamp(22px, 4vw, 28px);
+    margin: 0 0 4px;
+  }
+  .shop-alias{
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 8px;
+  }
+  .shop-area-tags{
+    display:flex; gap:8px; flex-wrap: wrap;
+  }
+  .tag{
+    font-size: 12.5px;
+    color: var(--steel-deep);
+    background: rgba(124,138,134,0.16);
+    border: 1px solid rgba(124,138,134,0.4);
+    padding: 2px 9px;
+    border-radius: 999px;
+  }
+  .stamp{
+    flex: none;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    border: 2px solid var(--stamp);
+    color: var(--stamp);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Noto Serif TC', serif;
+    font-weight: 900;
+    font-size: 20px;
+    transform: rotate(-6deg);
+    opacity: 0.85;
+  }
+
+  .verified{
+    padding: 10px 26px 0;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  /* Bento tray grid */
+  .tray{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    padding: 18px 26px 6px;
+  }
+  @media (max-width: 520px){
+    .tray{ grid-template-columns: 1fr; }
+  }
+  .cell{
+    background: var(--tray);
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: inset 0 2px 5px var(--tray-shadow-in), inset 0 -1px 0 var(--tray-shadow-hi);
+  }
+  .cell.menu-cell{ grid-column: 1 / -1; }
+  .cell h3{
+    margin: 0 0 8px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--stamp-deep);
+    display:flex; align-items:center; gap:6px;
+  }
+  .cell h3 svg{ width:15px; height:15px; flex:none; }
+  .cell p, .cell ul{ margin: 0; font-size: 14.5px; }
+  .cell ul{ padding-left: 18px; }
+  .cell li{ margin-bottom: 2px; }
+  .cell .note{
+    display:block; margin-top:8px;
+    font-size: 12px; color: var(--ink-soft);
+  }
+  .phone-link{
+    display:inline-block; margin-top: 6px;
+    font-size: 13.5px; font-weight: 700; color: var(--steel-deep);
+    text-decoration: none; border-bottom: 1px solid var(--steel-deep);
+  }
+
+  /* Menu price list */
+  .menu-list{ list-style:none; padding:0; margin:0; }
+  .menu-list li{
+    display:flex; justify-content:space-between; align-items:baseline;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px dashed rgba(176,141,87,0.4);
+    font-size: 14.5px;
+  }
+  .menu-list li:last-child{ border-bottom:none; }
+  .menu-list .item{ flex: 1; }
+  .menu-list .price{
+    flex: none;
+    font-weight: 700;
+    color: var(--stamp-deep);
+    font-family: 'Noto Serif TC', serif;
+  }
+
+  /* Map */
+  .map-wrap{
+    margin: 18px 26px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(176,141,87,0.5);
+    background: var(--tray);
+  }
+  .route-text{
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px;
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+  .route-text svg{ width: 18px; height: 18px; flex: none; margin-top: 2px; color: var(--stamp-deep); }
+  .route-text strong{ color: var(--stamp-deep); }
+  .map-link{
+    display:block;
+    padding: 10px 12px;
+    background: var(--tray);
+    font-size: 13.5px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--steel-deep);
+    font-weight: 700;
+    border-top: 1px solid rgba(176,141,87,0.4);
+  }
+  .map-link:hover{ background: var(--paper-deep); }
+
+  /* Photos / press row */
+  .extras{
+    padding: 20px 26px 26px;
+  }
+  .extras h3{
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--stamp-deep);
+    margin: 0 0 10px;
+  }
+  .photo-row{
+    display:flex; gap:10px; overflow-x:auto; padding-bottom: 4px; margin-bottom: 16px;
+  }
+  .photo-tile{
+    flex: none;
+    width: 130px; height: 96px;
+    border-radius: 8px;
+    background: linear-gradient(160deg, var(--paper-deep), var(--tray));
+    border: 1px solid rgba(176,141,87,0.5);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap: 6px;
+    text-decoration:none;
+    color: var(--ink);
+    padding: 8px;
+    text-align:center;
+  }
+  .photo-tile svg{ width: 26px; height: 26px; opacity: .65; flex:none; }
+  .photo-tile span{ font-size: 12px; line-height:1.3; font-weight: 700; }
+  .photo-tile small{ font-size: 10.5px; color: var(--ink-soft); font-weight: 400; }
+  .photo-tile:hover{ background: linear-gradient(160deg, var(--paper-deep), var(--paper)); }
+
+  .link-row{
+    display:flex; flex-wrap:wrap; gap:8px;
+  }
+  .link-chip{
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: var(--tray);
+    text-decoration:none;
+    color: var(--ink);
+    border: 1px solid rgba(176,141,87,0.4);
+  }
+  .link-chip:hover{ background: var(--paper-deep); }
+
+  footer{
+    max-width: 780px;
+    margin: 24px auto 0;
+    padding: 0 24px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>便當目錄</h1>
+  <div class="rule"></div>
+</header>
+
+<nav class="quicknav" id="quicknav"></nav>
+
+<main id="list"></main>
+
+<footer>共 <span id="count"></span> 間店 · 資料若有異動，請以店家最新公告為準。</footer>
+
+<script>
+/* ============================================================
+   👉 如何新增新店家：
+   複製最下面「範本」物件，貼在 shops 陣列最後面，
+   依格式填入資訊即可，畫面會自動產生新的卡片、地圖與快速索引。
+   欄位可留空字串 "" 或空陣列 []，不會影響版面。
+   menu 欄位格式為 [{item:"品項", price:"價格"}, ...]
+   lat / lng / placeId 用來畫地圖縮圖與產生正確的 Google 地圖連結，
+   建議用 Google 地圖搜尋店名後，從網址列複製座標。
+   ============================================================ */
+const shops = [
+  {
+    name: "極黑家 A Yi 腿庫飯",
+    alias: "原名「阿義腿庫飯」，品牌重塑後改用英文拼音，老闆仍是同一位",
+    area: "樹林",
+    dishTags: ["腿庫飯", "燒肉", "排骨"],
+    stamp: "01",
+    verified: "資料確認於 2026 年 9 月（營業時間取自 Google 地圖即時資料）",
+    hours: [
+      "週一至週六　10:30–14:00、16:00–22:00",
+      "週日　固定公休"
+    ],
+    hoursNote: "這間店近幾年搬過兩次家、營業時段也調整過多次，重要行程建議出發前再次確認 Google 地圖或粉專公告。",
+    address: "新北市樹林區俊英街106-1號",
+    phone: "02-2683-7728",
+    lat: 25.0053567, lng: 121.4276165, placeId: "ChIJ8UV7MD8daDQRedJTTwll8BY",
+    routeFromTKU: "開車約34分鐘（約26.0公里），途經台65線",
+    nearby: [],
+    parking: [
+      "俊英街停車場（俊英街123巷58號旁）— 同一條街上的公有平面停車場，小型車計時40元",
+      "店面斜對面即為三重客運新莊站，巷道不寬會車不易，建議騎車或步行前往"
+    ],
+    menu: [
+      { item: "大綜合一（腿庫＋燒肉＋香腸）", price: "約 $150–155" },
+      { item: "大綜合二（滷排＋燒肉＋香腸）", price: "約 $170" },
+      { item: "大綜合三（炸排＋腿庫）", price: "約 $175–185" },
+      { item: "雙拼（如腿庫＋燒肉）", price: "約 $130" },
+      { item: "單點排骨（滷排／炸排）", price: "約 $70–105" },
+      { item: "菜頭貢丸湯", price: "約 $40" }
+    ],
+    menuNote: "以上為門市食記記錄的價格（約1-2年前資料），近年物價調漲過幾次；外送平台上顯示的價格明顯更高（如腿庫飯約$177、大綜合約$260），推測是外送加價，實際門市價格請以現場公告為準。",
+    photoLinks: [
+      { label: "食記實拍（周花花，10+張）", url: "https://tenjo.tw/johojia-ayi/" },
+      { label: "食記實拍（appletrees.tw）", url: "https://appletrees.tw/blog/post/ayilegkurice" }
+    ],
+    links: [
+      { label: "Facebook 粉絲專頁", url: "https://www.facebook.com/p/%E6%A5%B5-%E9%BB%91%E5%AE%B6A-Yi-%E8%85%BF%E5%BA%AB%E9%A3%AF-61551558620362/" },
+      { label: "食記｜搬家新址・菜單一覽（appletrees.tw）", url: "https://appletrees.tw/blog/post/ayilegkurice" }
+    ]
+  },
+  {
+    name: "經濟小吃",
+    alias: "",
+    area: "淡水",
+    dishTags: ["排骨飯", "排骨炒飯"],
+    stamp: "02",
+    verified: "資料確認於 2026 年 9 月（營業時間取自 Google 地圖即時資料，電話已核實）",
+    hours: [
+      "週二至週日　12:00–14:00、17:00–19:30",
+      "週一　固定公休"
+    ],
+    hoursNote: "",
+    address: "新北市淡水區水源街一段122巷34號",
+    phone: "02-8631-6117",
+    lat: 25.1707602, lng: 121.44718, placeId: "ChIJc67WIfivQjQRyh8YlD4xiMc",
+    routeFromTKU: "開車約8分鐘（約550公尺），途經水源街一段122巷",
+    nearby: [
+      { label: "仁愛停車場", distanceM: 50, bearingDeg: 248 },
+      { label: "水源停車場", distanceM: 190, bearingDeg: 328 }
+    ],
+    parking: [
+      "仁愛停車場（新北市淡水區仁愛街17號）— 實測距離最近，直線距離約50公尺，走路約1分鐘，24小時營業，平日計時40元／小時",
+      "水源停車場（新北市淡水區水源街一段103號）— 距離較遠，直線距離約190公尺，走路約2-3分鐘，可作備案"
+    ],
+    menu: [
+      { item: "排骨飯（配酸菜／豆乾）", price: "$100" },
+      { item: "排骨炒飯", price: "約 $105" },
+      { item: "黑白切小菜（滷蛋／海帶／豆皮等）", price: "約 $50–60" },
+      { item: "大滷湯", price: "現場詢問" }
+    ],
+    menuNote: "排骨飯價格已依現場實際購買經驗更新為 $100（2026年9月）；網路上多數食記價格是幾年前的舊資料（約$75–85），僅供參考，其餘品項可能同步調漲，建議實際到店確認。相傳與知名的「黑店／黑殿排骨」同源，用餐尖峰需排隊點餐、報桌號。",
+    photoLinks: [
+      { label: "食記實拍（布咕布咕美食小天地）", url: "https://nixojov.tw/blog/post/349995319" }
+    ],
+    links: [
+      { label: "食記｜排骨炒飯介紹（Foody 吃貨）", url: "https://www.foodytw.com/review/1822" },
+      { label: "食記｜與黑殿排骨比較（bajenny.com）", url: "https://bajenny.com/blog/posts/44919565" }
+    ]
+  },
+  {
+    name: "壹柒吃雞",
+    alias: "陽明山竹子湖人氣土雞城「青菜園」第四代所開設",
+    area: "淡水",
+    dishTags: ["白斬雞", "雞湯", "青菜園"],
+    stamp: "03",
+    verified: "資料確認於 2026 年 9 月（營業時間取自 Google 地圖即時資料）",
+    hours: [
+      "週二至週五　11:30–19:00",
+      "週六、週日　11:00–19:00",
+      "週一　固定公休"
+    ],
+    hoursNote: "雞腿數量有限，賣完會提前關閉當日訂單，建議留一點緩衝時間前往或先加 Line 詢問。",
+    address: "新北市淡水區新春街23號1樓",
+    phone: "0989-579-596",
+    lat: 25.1815042, lng: 121.4369472, placeId: "ChIJe6ehTcelQjQR7YGJB1Q55OY",
+    routeFromTKU: "開車約7分鐘（約3.1公里），途經學府路和新春街",
+    nearby: [],
+    parking: [
+      "新春街本身以路邊停車格為主，附近沒有查到專屬的收費停車場",
+      "較大型的公共停車場可考慮家樂福淡水店（中山北路二段383號）或淡水市民聯合服務中心一帶，車程約數分鐘，實際依現場路況調整",
+      "建議騎車前往較方便"
+    ],
+    menu: [
+      { item: "放山白斬雞（半隻）", price: "約 $695" },
+      { item: "雞肉便當", price: "約 $260" },
+      { item: "雞肉炒飯", price: "約 $260" },
+      { item: "香菇雞湯", price: "約 $870" },
+      { item: "腿翅便當", price: "數量有限，售完為止" }
+    ],
+    menuNote: "以上為外送平台顯示的價格，供參考；現場購買價格可能不同。",
+    photoLinks: [
+      { label: "食記實拍（波爸的世界跑趴紀實）", url: "https://kingyang2011.pixnet.net/blog/post/233583843" },
+      { label: "外送平台評論與照片（foodpanda）", url: "https://www.foodpanda.com.tw/restaurant/uila/yi-qi-chi-ji/reviews" }
+    ],
+    links: [
+      { label: "Facebook 粉絲專頁", url: "https://www.facebook.com/people/%E5%A3%B9%E6%9F%92%E5%90%83%E9%9B%9E/100091594625607/" }
+    ]
+  },
+
+  {
+    name: "金仙排骨捲",
+    alias: "",
+    area: "英專路",
+    dishTags: ["排骨捲", "蝦捲", "雞腿"],
+    stamp: "04",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自 Google 地圖）",
+    hours: ["週一至週六　11:00–14:00、17:00–19:30", "週日　固定公休"],
+    hoursNote: "",
+    address: "新北市淡水區博愛街13號",
+    phone: "02-2620-6982",
+    lat: 25.169970700000004, lng: 121.4461709, placeId: "ChIJYYQ35PevQjQRXc4dVe3WQ3I",
+    routeFromTKU: "開車約9分鐘（約650公尺），途經英專路",
+    nearby: [],
+    parking: [
+      "仁愛停車場（仁愛街17號）與水源停車場（水源街一段103號）步行約5–8分鐘可達，是這一帶最近的正式停車場",
+      "博愛街本身巷道窄、人潮多，建議騎車或步行前往"
+    ],
+    menu: [
+      { item: "雞腿飯", price: "約 $90" },
+      { item: "蝦捲便當", price: "現場詢問" },
+      { item: "炸豬排便當", price: "現場詢問" },
+      { item: "鱈魚排便當", price: "現場詢問" }
+    ],
+    menuNote: "英專商圈知名排骨捲便當店，蝦捲與滷汁是招牌，價位略高於一般便當店；雞腿飯價格取自食記，其餘品項未查到公開價格。",
+    photoLinks: [
+      { label: "食記（布咕布咕美食小天地）", url: "https://nixojov.pixnet.net/blog/post/349903909" }
+    ],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJYYQ35PevQjQRXc4dVe3WQ3I" }
+    ]
+  },
+  {
+    name: "萍萍便當快餐",
+    alias: "原名「好品味」，在地人多年推薦老字號",
+    area: "英專路",
+    dishTags: ["滷肉飯", "家常便當"],
+    stamp: "05",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自 Google 地圖）",
+    hours: ["週一至週四　11:00–13:00、17:00–19:00", "週五至週日　固定公休"],
+    hoursNote: "只營業週一到週四，週末公休要特別注意。",
+    address: "新北市淡水區博愛街29號",
+    phone: "02-2623-6493",
+    lat: 25.1696058, lng: 121.44635160000001, placeId: "ChIJecQbFravQjQRupQ-75o8LHE",
+    routeFromTKU: "開車約10分鐘（約700公尺），途經英專路",
+    nearby: [],
+    parking: [
+      "仁愛停車場（仁愛街17號）與水源停車場（水源街一段103號）步行約5–8分鐘可達",
+      "巷弄型店面，建議騎車或步行前往"
+    ],
+    menu: [
+      { item: "滷肉飯便當", price: "$100 以下" },
+      { item: "家常配菜（多樣任選）", price: "現場詢問" }
+    ],
+    menuNote: "多年在地口碑店，價位親民、菜色選擇多，用餐時段常見排隊人潮。",
+    photoLinks: [],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJecQbFravQjQRupQ-75o8LHE" }
+    ]
+  },
+  {
+    name: "京華快餐",
+    alias: "",
+    area: "英專路",
+    dishTags: ["炒飯", "炒麵", "三色飯"],
+    stamp: "06",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自 Google 地圖）",
+    hours: ["每日　11:00–13:50、17:00–20:30"],
+    hoursNote: "",
+    address: "新北市淡水區博愛街27號",
+    phone: "02-2623-0073",
+    lat: 25.1695766, lng: 121.44635009999999, placeId: "ChIJC3RK6PevQjQRHHi3GGnESp4",
+    routeFromTKU: "開車約10分鐘（約700公尺），途經英專路",
+    nearby: [],
+    parking: [
+      "仁愛停車場（仁愛街17號）與水源停車場（水源街一段103號）步行約5–8分鐘可達",
+      "博愛街周邊多為店家聚集的巷弄，建議騎車或步行"
+    ],
+    menu: [
+      { item: "蛋炒飯", price: "約 $65" },
+      { item: "青椒豬肉飯／黑胡椒牛肉飯", price: "約 $80–90" },
+      { item: "蔥爆羊肉炒麵", price: "約 $80" }
+    ],
+    menuNote: "營業多年的快炒快餐店，炒飯炒麵口感有嚼勁不軟爛，飯後附湯免費；也有附湯的三色飯類選擇。",
+    photoLinks: [
+      { label: "食記（u8910520的部落格）", url: "https://u8910520.pixnet.net/blog/post/35968006" },
+      { label: "食記（雪莉小廚房）", url: "https://hung0731.pixnet.net/blog/post/99757051" }
+    ],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJC3RK6PevQjQRHHi3GGnESp4" }
+    ]
+  },
+  {
+    name: "義裕排骨",
+    alias: "70年老店，原中正路義裕排骨飯搬遷後新址",
+    area: "英專路",
+    dishTags: ["排骨飯", "雞腿排"],
+    stamp: "07",
+    verified: "資料確認於 2026 年 9 月",
+    hours: ["營業時間 Google 地圖未提供完整資料"],
+    hoursNote: "近期食記與評論反映曾多次臨時公休或延後開店（曾在社群公告展延），建議出發前務必先電話確認是否營業。",
+    address: "新北市淡水區英專路28巷2弄19號",
+    phone: "02-2628-2239",
+    lat: 25.169280699999998, lng: 121.4458872, placeId: "ChIJyfTB3vevQjQRL9TWGfxGnQ4",
+    routeFromTKU: "開車約10分鐘（約700公尺），途經英專路",
+    nearby: [],
+    parking: [
+      "仁愛停車場（仁愛街17號）與水源停車場（水源街一段103號）步行約5分鐘可達"
+    ],
+    menu: [
+      { item: "排骨飯", price: "約 $130" },
+      { item: "雞腿排飯", price: "現場詢問" },
+      { item: "豬腳飯", price: "數量有限，售完為止" }
+    ],
+    menuNote: "70年傳統古早味台灣味便當店，口味近似老鐵路便當；但營業穩定度是目前已知最大的風險，建議先電話確認再出發。",
+    photoLinks: [
+      { label: "食記（瘋什麼）", url: "https://asabluelife.com/archives/191" },
+      { label: "食記（波爸的世界跑趴紀實）", url: "https://kingyang2011.pixnet.net/blog/post/223543776" }
+    ],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJyfTB3vevQjQRL9TWGfxGnQ4" }
+    ]
+  },
+  {
+    name: "黑金滷肉飯",
+    alias: "",
+    area: "北新路",
+    dishTags: ["滷肉飯", "家常便當"],
+    stamp: "08",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自 Google 地圖）",
+    hours: ["週一、二、四、五　11:00–20:00", "週三、六、日　固定公休"],
+    hoursNote: "公休日比較特別（週三加上週末），出發前建議再次確認。",
+    address: "新北市淡水區北新路136號",
+    phone: "02-2629-6325",
+    lat: 25.1782933, lng: 121.44837749999999, placeId: "ChIJGUk-uTavQjQRZNqVM12hr6w",
+    routeFromTKU: "開車約12分鐘（約750公尺），途經北新路",
+    nearby: [],
+    parking: [
+      "此區（北新路／淡江大學周邊）巷弄多、車位少，以路邊機車格為主",
+      "較大型停車場可考慮捷運淡水站轉乘停車場（中正路1號）或淡水區公有三民立體停車場（建設街6號），車程約5–10分鐘"
+    ],
+    menu: [
+      { item: "鮮蚵滷肉蓋飯", price: "約 $95（外送平台約 $165）" },
+      { item: "五花肉便當", price: "約 $80–105（外送平台約 $155）" },
+      { item: "滷肉飯便當", price: "約 $60（外送平台約 $120）" },
+      { item: "滷肉飯（小）", price: "約 $45" }
+    ],
+    menuNote: "滷肉飯專門店，環境乾淨、評價一致好評；門市價格取自食記，外送平台價格明顯較高（通常含30–70%加價），建議以現場公告為準。",
+    photoLinks: [
+      { label: "食記（波爸的世界跑趴紀實）", url: "https://kingyang2011.pixnet.net/blog/post/230887804" },
+      { label: "食記（肥豪與小丁の美食旅遊部落格）", url: "https://lanfong83.pixnet.net/blog/post/142045231" }
+    ],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJGUk-uTavQjQRZNqVM12hr6w" }
+    ]
+  },
+  {
+    name: "力霸椒麻雞",
+    alias: "",
+    area: "北新路",
+    dishTags: ["椒麻雞", "炸物"],
+    stamp: "09",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自 Google 地圖）",
+    hours: ["每日　11:00–20:30"],
+    hoursNote: "",
+    address: "新北市淡水區北新路182巷5弄18號",
+    phone: "02-2620-0408",
+    lat: 25.177442199999998, lng: 121.4496518, placeId: "ChIJKVIC5e2vQjQRvCUZ9Md7r8s",
+    routeFromTKU: "開車約9分鐘（約600公尺），途經驚聲路",
+    nearby: [],
+    parking: [
+      "此區（北新路182巷／淡江大學周邊）巷弄多、車位少，以路邊機車格為主",
+      "較大型停車場可考慮捷運淡水站轉乘停車場（中正路1號），車程約5–10分鐘"
+    ],
+    menu: [
+      { item: "椒麻雞便當", price: "約 $110" },
+      { item: "酥炸雞排便當", price: "約 $100" },
+      { item: "控肉飯", price: "約 $100" }
+    ],
+    menuNote: "椒麻雞外酥內嫩評價很高，配菜份量給得大方；樓下用餐區也提供飲料和湯。",
+    photoLinks: [
+      { label: "食記（Eily Lin）", url: "https://eilyla.wordpress.com/2025/11/02/%E6%B7%A1%E6%B1%9F%E7%BE%8E%E9%A3%9F%EF%BD%9C%E9%AB%98%E5%BA%A6%E9%82%84%E5%8E%9F%E4%BA%86%E6%A4%92%E9%BA%BB%E9%9B%9E%E5%A4%A7%E7%8E%8B%E7%9A%84%E5%8A%9B%E9%9C%B8%E6%A4%92%E9%BA%BB%E9%9B%9E/" }
+    ],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJKVIC5e2vQjQRvCUZ9Md7r8s" }
+    ]
+  },
+  {
+    name: "椒麻雞大王",
+    alias: "",
+    area: "北新路",
+    dishTags: ["椒麻雞", "淡大學生最愛"],
+    stamp: "10",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自 Google 地圖）",
+    hours: ["週一至週六　11:00–20:00", "週日　固定公休"],
+    hoursNote: "",
+    address: "新北市淡水區北新路182巷5弄31號",
+    phone: "02-2628-1799",
+    lat: 25.1771772, lng: 121.44946809999999, placeId: "ChIJJZk97_6vQjQRpH0ZzPmIl5E",
+    routeFromTKU: "開車約8分鐘（約550公尺），途經驚聲路",
+    nearby: [],
+    parking: [
+      "此區（北新路182巷／淡江大學周邊）巷弄多、車位少，以路邊機車格為主",
+      "較大型停車場可考慮捷運淡水站轉乘停車場（中正路1號），車程約5–10分鐘"
+    ],
+    menu: [
+      { item: "椒麻雞便當", price: "約 $100 以內" },
+      { item: "炸雞胸便當", price: "約 $100 以內" }
+    ],
+    menuNote: "淡大學生最愛，湯、飲料、白飯都可免費續，用一次性餐具、CP值高；門口招牌就寫明這個特色。",
+    photoLinks: [
+      { label: "食記（girlsplan.com）", url: "https://girlsplan.com/jiaomaji/" },
+      { label: "食記（峰大的生活札記）", url: "https://changfong.pixnet.net/blog/posts/46462002" }
+    ],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJJZk97_6vQjQRpH0ZzPmIl5E" }
+    ]
+  },
+  {
+    name: "滿味燒臘店",
+    alias: "",
+    area: "中山北路",
+    dishTags: ["燒臘", "燒鴨飯"],
+    stamp: "11",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自 Google 地圖）",
+    hours: ["週一至週六　11:00–13:30、17:00–20:00", "週日　固定公休"],
+    hoursNote: "",
+    address: "新北市淡水區中山北路一段104號",
+    phone: "02-2626-1989",
+    lat: 25.1765215, lng: 121.44278580000001, placeId: "ChIJTYlJh1alQjQR9x_ULMjJK8s",
+    routeFromTKU: "開車約14分鐘（約1.1公里），途經大忠街",
+    nearby: [],
+    parking: [
+      "捷運淡水站轉乘停車場（中正路1號）或淡水區公有三民立體停車場（建設街6號），車程約5分鐘",
+      "中山北路車流較大，開車前往建議直接找停車場，不建議路邊等候"
+    ],
+    menu: [
+      { item: "燒鴨飯", price: "約 $100" },
+      { item: "叉燒飯", price: "現場詢問" }
+    ],
+    menuNote: "銅板價燒臘便當，內用有冷氣、環境乾淨；用餐尖峰時樓梯上下取餐要留意。",
+    photoLinks: [
+      { label: "食記（曉風中的晴天日記）", url: "https://sunny989.pixnet.net/blog/posts/8232120480" },
+      { label: "食記（鍾愛銅板美食的貪吃鬼）", url: "https://chenmin1935.pixnet.net/blog/post/183603482" }
+    ],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJTYlJh1alQjQR9x_ULMjJK8s" }
+    ]
+  },
+  {
+    name: "合味台灣小吃",
+    alias: "",
+    area: "老街",
+    dishTags: ["紅燒肉", "台灣家常菜"],
+    stamp: "12",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自 Google 地圖）",
+    hours: ["週三至週日　11:00–14:00、16:30–19:00", "週一、二　固定公休"],
+    hoursNote: "只有下午茶前的短短兩個時段營業，公休日也比較多，建議提早規劃。",
+    address: "新北市淡水區中正路30號",
+    phone: "02-2621-6623",
+    lat: 25.1693362, lng: 121.44408899999999, placeId: "ChIJs2Z2UZKlQjQRnViS432QYjw",
+    routeFromTKU: "開車約12分鐘（約850公尺），途經水源街",
+    nearby: [],
+    parking: [
+      "捷運淡水站轉乘停車場（中正路1號）步行約5分鐘",
+      "淡水區公有三民立體停車場（建設街6號）步行約5–8分鐘"
+    ],
+    menu: [
+      { item: "紅燒肉便當", price: "現場詢問" },
+      { item: "雞腿飯（任選3配菜）", price: "約 $130" },
+      { item: "滷肉飯（小）", price: "約 $35" },
+      { item: "炸豆腐", price: "約 $40" },
+      { item: "燙青菜（地瓜葉）", price: "約 $40" }
+    ],
+    menuNote: "目前全清單評分最高的一間（4.6分），紅燒肉、雞肉飯、滷豆腐評價都很好，環境乾淨、外國旅客評論也很多；只收現金，店門口不能停車、警察開單警戒區。",
+    photoLinks: [
+      { label: "食記（省錢王Jet）", url: "https://jetpeter.pixnet.net/blog/post/406620505" },
+      { label: "食記（雪莉小廚房）", url: "https://hung0731.pixnet.net/blog/post/122142845" }
+    ],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJs2Z2UZKlQjQRnViS432QYjw" }
+    ]
+  },
+  {
+    name: "古都川味快餐",
+    alias: "",
+    area: "水源街",
+    dishTags: ["三杯雞", "椒鹽雞柳"],
+    stamp: "13",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自 Google 地圖）",
+    hours: ["週一至週五　11:30–13:30、17:30–19:00", "週日　11:30–13:30、17:30–19:30", "週六　固定公休"],
+    hoursNote: "",
+    address: "新北市淡水區學府路164號之1",
+    phone: "02-2621-5336",
+    lat: 25.1749993, lng: 121.4466424, placeId: "ChIJ3eyBu_ivQjQRg7HeZOe7Tic",
+    routeFromTKU: "開車約3分鐘（約200公尺），途經學府路",
+    nearby: [],
+    parking: [
+      "仁愛停車場（仁愛街17號）與水源停車場（水源街一段103號）步行約5分鐘可達"
+    ],
+    menu: [
+      { item: "三杯雞飯", price: "約 $100" },
+      { item: "沙茶牛肉飯", price: "約 $100" },
+      { item: "薑汁牛肉飯", price: "約 $100" },
+      { item: "鳳梨雞排飯", price: "現場詢問" }
+    ],
+    menuNote: "全清單評分第二高（4.5分），幾乎所有主餐都在90–100元左右，湯品、紅茶吃到飽，環境乾淨、CP值很高。",
+    photoLinks: [],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJ3eyBu_ivQjQRg7HeZOe7Tic" }
+    ]
+  },
+  {
+    name: "Everyday 蔬食創意餐盒",
+    alias: "素食便當，評分全清單最高",
+    area: "水源街",
+    dishTags: ["素食", "創意餐盒"],
+    stamp: "14",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自 Google 地圖）",
+    hours: ["週一、三至週日　11:00–20:00", "週二　固定公休"],
+    hoursNote: "店名有註記「六月有特休四天」等不定期公告，建議出發前看一下 Google 地圖最新公告。",
+    address: "新北市淡水區水源街一段58號",
+    phone: "0903-013-578",
+    lat: 25.1721821, lng: 121.44487550000001, placeId: "ChIJ21OdtaqlQjQRehe-T1Fr5cc",
+    routeFromTKU: "開車約6分鐘（約400公尺），途經水源街一段83巷",
+    nearby: [],
+    parking: [
+      "仁愛停車場（仁愛街17號）與水源停車場（水源街一段103號）就在同一條街上，步行約2–3分鐘"
+    ],
+    menu: [
+      { item: "杏鮑菇蓋飯", price: "現場詢問" },
+      { item: "檸檬魚（蔬食）飯", price: "現場詢問" },
+      { item: "藜麥飯選項", price: "現場詢問" }
+    ],
+    menuNote: "全清單評分最高（4.9分），是真正低調的素食隱藏版；白色系裝潢乾淨明亮，老闆親切，適合平常想吃蔬食的日子。",
+    photoLinks: [],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJ21OdtaqlQjQRehe-T1Fr5cc" }
+    ]
+  },
+  {
+    name: "帕霏兔健康餐盒",
+    alias: "",
+    area: "重建街",
+    dishTags: ["健康餐盒", "低GI"],
+    stamp: "15",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自外送平台即時資料）",
+    hours: ["週一、三至週日　11:00–19:45", "週二　固定公休"],
+    hoursNote: "",
+    address: "新北市淡水區重建街216號",
+    phone: "0905-052-819",
+    lat: 25.1747513, lng: 121.44131119999999, placeId: "ChIJm0MQrumnQjQRTUz9YRy7KXM",
+    routeFromTKU: "開車約18分鐘（約1.3公里），途經大忠街",
+    nearby: [],
+    parking: [
+      "淡水區公有三民立體停車場（建設街6號）步行約5分鐘",
+      "重建街車道窄、公車多，開車較不方便，建議步行或騎車"
+    ],
+    menu: [
+      { item: "低脂雞腿餐盒", price: "約 $180（外送平台價）" },
+      { item: "乾煎鮭魚餐盒", price: "約 $200（外送平台價）" },
+      { item: "地瓜泥餐盒（雞肉）", price: "約 $100（外送平台價）" },
+      { item: "醬燒牛丼", price: "約 $190（外送平台價）" }
+    ],
+    menuNote: "主打健康餐盒，蔬菜份量給得多、無內用只能外帶；以上為外送平台顯示價格，門市現場價格可能略低，建議加 Line 或電話詢問。",
+    photoLinks: [
+      { label: "食記（Stancy Teacher 美味異想世界）", url: "https://stancylife.com/puffy/" }
+    ],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJm0MQrumnQjQRTUz9YRy7KXM" }
+    ]
+  },
+  {
+    name: "淡水盒 x 活力餐廚",
+    alias: "",
+    area: "北新路",
+    dishTags: ["健康餐盒", "控醣"],
+    stamp: "16",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自 Google 地圖）",
+    hours: ["每日　11:00–20:00"],
+    hoursNote: "",
+    address: "新北市淡水區北新路182巷31號",
+    phone: "0912-689-660",
+    lat: 25.1774685, lng: 121.4486697, placeId: "ChIJ80qYzHKvQjQRikP1rsNORnI",
+    routeFromTKU: "開車約9分鐘（約600公尺），途經驚聲路",
+    nearby: [],
+    parking: [
+      "此區（北新路182巷／淡江大學周邊）巷弄多、車位少，以路邊機車格為主",
+      "較大型停車場可考慮捷運淡水站轉乘停車場（中正路1號），車程約5–10分鐘"
+    ],
+    menu: [
+      { item: "椒麻雞胸餐盒", price: "約 $140" },
+      { item: "韓式辣味菇菇雞胸餐盒", price: "約 $145" }
+    ],
+    menuNote: "健康餐盒連鎖，可自選飯量與蔬菜比例，適合控制飲食的人；價位略高於一般便當店。",
+    photoLinks: [],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJ80qYzHKvQjQRikP1rsNORnI" }
+    ]
+  },
+  {
+    name: "黑金大飯店",
+    alias: "竹圍在地台菜便當店",
+    area: "竹圍",
+    dishTags: ["台菜便當", "雞湯"],
+    stamp: "17",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自 Google 地圖）",
+    hours: ["每日　11:00–20:30"],
+    hoursNote: "",
+    address: "新北市淡水區民生路52巷22弄5號",
+    phone: "02-2809-8892",
+    lat: 25.137192799999998, lng: 121.46200479999999, placeId: "ChIJMUSAxJ2vQjQR2zSihFAyiNk",
+    routeFromTKU: "開車約12分鐘（約5.3公里），途經台2乙線",
+    nearby: [],
+    parking: [
+      "新北市淡水民生停車場（民生路27-1號）步行約2分鐘，24小時營業",
+      "日月亭民生立體停車場 uTagGo（民生路27號）也在同一區塊，可互為備案"
+    ],
+    menu: [
+      { item: "無骨雞腿便當", price: "約 $95" },
+      { item: "排骨便當", price: "約 $95" },
+      { item: "五花肉便當", price: "約 $80" },
+      { item: "滷肉飯便當", price: "約 $60" },
+      { item: "鮮蚵滷肉蓋飯", price: "約 $95" }
+    ],
+    menuNote: "竹圍在地人氣台菜便當店，雞湯、蒜泥鮮蚵評價很好，生意很旺；便當份量偏大、需事先告知想選的配菜，尖峰時間座位較擁擠。",
+    photoLinks: [
+      { label: "食記（肥豪與小丁の美食旅遊部落格）", url: "https://lanfong83.pixnet.net/blog/post/29475439" },
+      { label: "食記（Walkerland）", url: "https://www.walkerland.com.tw/article/view/387765" }
+    ],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJMUSAxJ2vQjQR2zSihFAyiNk" }
+    ]
+  },
+  {
+    name: "金日好吃雞肉飯",
+    alias: "",
+    area: "竹圍",
+    dishTags: ["雞腿飯", "內臟湯"],
+    stamp: "18",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自 Google 地圖）",
+    hours: ["週一至週六　11:00–14:00、17:00–20:00", "週日　固定公休"],
+    hoursNote: "曾多次開業初期就完售，建議提早前往或先電話詢問是否還有雞肉飯。",
+    address: "新北市淡水區民權路177巷33號",
+    phone: "02-2808-0000",
+    lat: 25.1347408, lng: 121.4607169, placeId: "ChIJ96bVVZWvQjQRKGbCaXMOfUg",
+    routeFromTKU: "開車約12分鐘（約5.7公里），途經台2乙線",
+    nearby: [],
+    parking: [
+      "新北市淡水民生停車場（民生路27-1號）車程約2–3分鐘，是竹圍區最主要的立體停車場"
+    ],
+    menu: [
+      { item: "銷魂雞肉飯", price: "約 $165（外送平台價）" },
+      { item: "金正雞丁飯", price: "約 $100（外送平台價）" },
+      { item: "金正雞油飯", price: "約 $35（外送平台價）" },
+      { item: "小份雞肉切盤", price: "約 $60（外送平台約 $100）" },
+      { item: "燙青菜／貢丸湯", price: "約 $50–65" }
+    ],
+    menuNote: "放山雞雞腿飯、半熟水波蛋評價很好，內臟湯也是招牌之一；以上為外送平台顯示價格，門市現場價格可能略低。",
+    photoLinks: [],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJ96bVVZWvQjQRKGbCaXMOfUg" }
+    ]
+  },
+  {
+    name: "華軒排骨",
+    alias: "",
+    area: "竹圍",
+    dishTags: ["排骨飯", "蝦捲"],
+    stamp: "19",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自 Google 地圖）",
+    hours: ["每日　11:00–14:00、17:00–19:30"],
+    hoursNote: "",
+    address: "新北市淡水區民生路16巷30號",
+    phone: "02-2808-3966",
+    lat: 25.137456300000004, lng: 121.46168309999999, placeId: "ChIJe-JFz52vQjQR6eux_x3jyLE",
+    routeFromTKU: "開車約11分鐘（約5.3公里），途經台2乙線",
+    nearby: [],
+    parking: [
+      "新北市淡水民生停車場（民生路27-1號）步行約2分鐘，24小時營業"
+    ],
+    menu: [
+      { item: "排骨飯", price: "現場詢問" },
+      { item: "貢丸湯", price: "約 $35" }
+    ],
+    menuNote: "巷弄內的家常便當小店，排骨、蝦捲口味中規中矩但穩定，評論數不多但風評一致正面。",
+    photoLinks: [],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJe-JFz52vQjQR6eux_x3jyLE" }
+    ]
+  },
+  {
+    name: "饗宴小館",
+    alias: "隱藏在新市鎮鐵皮屋中的燒臘便當店",
+    area: "新市鎮",
+    dishTags: ["燒臘", "控肉飯"],
+    stamp: "20",
+    verified: "資料確認於 2026 年 9 月（電話、營業時間取自 Google 地圖）",
+    hours: ["週一至週六　11:00–14:00、17:00–19:00", "週日　11:00–13:00"],
+    hoursNote: "",
+    address: "新北市淡水區後州路一段35號",
+    phone: "02-8631-0238",
+    lat: 25.203092800000004, lng: 121.43074279999999, placeId: "ChIJBQUIULy6QjQRgwpS8RpwuyY",
+    routeFromTKU: "開車約11分鐘（約6.0公里），途經後州路一段/台2乙線",
+    nearby: [],
+    parking: [
+      "新市鎮一帶開發較晚、周邊多是工地，沒有查到專屬停車場，以路邊停車為主",
+      "建議騎車前往較方便"
+    ],
+    menu: [
+      { item: "燒鴨飯", price: "約 $80" },
+      { item: "招牌飯（油雞、叉燒、燒鴨＋蛋）", price: "約 $90" },
+      { item: "控肉飯", price: "現場詢問" }
+    ],
+    menuNote: "淡水新市鎮住民少數的便當選擇之一，主打燒臘，燒鴨飯、控肉飯評價都不錯，鐵皮屋外觀低調到不注意會錯過。",
+    photoLinks: [
+      { label: "食記（kaikk.tw）", url: "https://kaikk.tw/siumei-tamsui/" }
+    ],
+    links: [
+      { label: "Google 地圖評論", url: "https://www.google.com/maps/place/?q=place_id:ChIJBQUIULy6QjQRgwpS8RpwuyY" }
+    ]
+  },
+
+  /* ---------- 範本（複製這一塊來新增店家，記得移除最前面的 /* 跟最後面的 *​/ ） ----------
+  {
+    name: "店名",
+    alias: "（選填）別名、原名或補充身份說明",
+    area: "地區（例如：淡水／樹林）",
+    dishTags: ["招牌菜1", "招牌菜2"],
+    stamp: "04",
+    verified: "資料確認於 2026 年 X 月",
+    hours: ["週一至週五　11:00–14:00", "週六、週日　公休"],
+    hoursNote: "（選填）營業時間的補充說明或不確定之處",
+    address: "完整地址",
+    phone: "電話號碼",
+    lat: 0.0, lng: 0.0, placeId: "",
+    nearby: [], // 選填，例如 [{ label: "OO停車場", distanceM: 100, bearingDeg: 90 }]
+    parking: ["附近停車資訊1", "附近停車資訊2"],
+    menu: [{ item: "品項", price: "價格" }],
+    menuNote: "（選填）菜單或用餐方式補充",
+    photoLinks: [{ label: "照片來源說明", url: "https://..." }],
+    links: [{ label: "連結說明", url: "https://..." }]
+  },
+  ------------------------------------------------------------------------------- */
+];
+
+/* ---------- Icons ---------- */
+const icon = {
+  clock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`,
+  pin: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/></svg>`,
+  car: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16h16"/><circle cx="7.5" cy="16.5" r="1.6"/><circle cx="16.5" cy="16.5" r="1.6"/></svg>`,
+  bowl: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18a9 9 0 0 1-18 0z"/><path d="M8 12c0-3 1.8-5 4-5s4 2 4 5"/></svg>`,
+  photo: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10.5" r="1.6"/><path d="M21 16l-5.5-5-4 4L8 12l-5 5"/></svg>`
+};
+
+function esc(s){ return (s ?? "").toString(); }
+function slugId(i){ return `shop-${i+1}`; }
+
+
+function renderCell(title, iconKey, bodyHtml, note, extraClass){
+  return `
+    <div class="cell${extraClass ? ' ' + extraClass : ''}">
+      <h3>${icon[iconKey]}${title}</h3>
+      ${bodyHtml}
+      ${note ? `<span class="note">${esc(note)}</span>` : ""}
+    </div>`;
+}
+
+function shopCard(shop, i){
+  const areaTags = `<span class="tag">${esc(shop.area)}</span>` +
+    (shop.dishTags || []).map(t => `<span class="tag">${esc(t)}</span>`).join("");
+
+  const hoursBody = `<ul>${(shop.hours || []).map(h => `<li>${esc(h)}</li>`).join("")}</ul>`;
+
+  const addrBody = `
+    <p>${esc(shop.address)}</p>
+    <a class="phone-link" href="tel:${esc((shop.phone||"").replace(/-/g,""))}">📞 ${esc(shop.phone)}</a>`;
+  const addrNote = shop.phoneNote || "";
+
+  const parkBody = `<ul>${(shop.parking || []).map(p => `<li>${esc(p)}</li>`).join("")}</ul>`;
+
+  const menuBody = `<ul class="menu-list">${(shop.menu || []).map(m =>
+    `<li><span class="item">${esc(m.item)}</span><span class="price">${esc(m.price)}</span></li>`
+  ).join("")}</ul>`;
+
+  const hasGeo = typeof shop.lat === "number" && typeof shop.lng === "number" && !(shop.lat === 0 && shop.lng === 0);
+  const mapOpen = hasGeo
+    ? `https://www.google.com/maps/search/?api=1&query=${shop.lat},${shop.lng}${shop.placeId ? `&query_place_id=${encodeURIComponent(shop.placeId)}` : ""}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shop.name + " " + shop.address)}`;
+  const TKU = { lat: 25.1740706, lng: 121.4473008, placeId: "ChIJ20tUwfivQjQRKzazlPT03AE" };
+  const directionsFromTKU = hasGeo
+    ? `https://www.google.com/maps/dir/?api=1&origin=${TKU.lat},${TKU.lng}&origin_place_id=${TKU.placeId}&destination=${shop.lat},${shop.lng}&destination_place_id=${encodeURIComponent(shop.placeId || "")}&travel_mode=driving`
+    : "";
+  const imgSearchUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(shop.name + " " + shop.area + " 便當")}`;
+
+  const photoTiles = [
+    { label: "Google 圖片搜尋", small: "隨時更新的最新照片", url: imgSearchUrl },
+    ...(shop.photoLinks || [])
+  ].map(p =>
+    `<a class="photo-tile" href="${esc(p.url)}" target="_blank" rel="noopener">
+      ${icon.photo}<span>${esc(p.label)}</span>${p.small ? `<small>${esc(p.small)}</small>` : ""}
+    </a>`
+  ).join("");
+
+  const links = (shop.links || []).map(l =>
+    `<a class="link-chip" href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`
+  ).join("");
+
+  return `
+  <article class="shop" id="${slugId(i)}" data-area="${esc(shop.area)}">
+    <div class="shop-head">
+      <div class="titles">
+        <h2 class="shop-name">${esc(shop.name)}</h2>
+        ${shop.alias ? `<p class="shop-alias">${esc(shop.alias)}</p>` : ""}
+        <div class="shop-area-tags">${areaTags}</div>
+      </div>
+      <div class="stamp">${esc(shop.stamp || "")}</div>
+    </div>
+
+    ${shop.verified ? `<div class="verified">${esc(shop.verified)}</div>` : ""}
+
+    <div class="tray">
+      ${renderCell("營業時間與公休", "clock", hoursBody, shop.hoursNote)}
+      ${renderCell("地址・電話", "pin", addrBody, addrNote)}
+      ${renderCell("附近停車", "car", parkBody)}
+      ${renderCell("便當菜單與價目", "bowl", menuBody, shop.menuNote, "menu-cell")}
+    </div>
+
+    <div class="map-wrap">
+      <div class="route-text">
+        ${icon.pin}
+        <div>
+          <strong>從淡江大學出發：</strong> ${shop.routeFromTKU ? esc(shop.routeFromTKU) : "路線資料尚未建立"}
+        </div>
+      </div>
+      <a class="map-link" href="${mapOpen}" target="_blank" rel="noopener">在 Google 地圖開啟（完整地圖與路線）→</a>
+      ${directionsFromTKU ? `<a class="map-link" href="${directionsFromTKU}" target="_blank" rel="noopener">🎓 從淡江大學出發的路線與時間 →</a>` : ""}
+    </div>
+
+    <div class="extras">
+      <h3>照片｜點卡片看實拍</h3>
+      <div class="photo-row">${photoTiles}</div>
+      <h3>相關報導與連結</h3>
+      <div class="link-row">${links}</div>
+      <a class="back-to-index" data-back-to-index>↑ 回目錄</a>
+    </div>
+  </article>`;
+}
+
+/* 刪除的店家用 localStorage 記住（用店名當 key），重新整理頁面後仍會保持已刪除的狀態。
+   這只是「在這個瀏覽器裡隱藏」，不會動到上面 shops 陣列的原始資料，
+   如果想恢復，清除瀏覽器的 localStorage（或換一台裝置開啟）就會全部顯示回來。 */
+const DELETED_KEY = "bento-catalog-deleted-v1";
+function loadDeleted(){
+  try { return new Set(JSON.parse(localStorage.getItem(DELETED_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+}
+function saveDeleted(set){
+  try { localStorage.setItem(DELETED_KEY, JSON.stringify([...set])); } catch(e){}
+}
+let deleted = loadDeleted();
+
+function visibleShops(){
+  return shops.filter(s => !deleted.has(s.name));
+}
+
+function render(){
+  const list = document.getElementById("list");
+  list.innerHTML = visibleShops().map((s, i) => shopCard(s, i)).join("");
+  document.getElementById("count").textContent = visibleShops().length;
+  list.querySelectorAll("[data-back-to-index]").forEach(a => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      document.getElementById("quicknav").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+}
+
+function renderQuickNav(){
+  const el = document.getElementById("quicknav");
+  el.innerHTML = visibleShops().map((s, i) => `
+    <div class="quicknav-row">
+      <a data-target="${slugId(i)}"><span class="num">${i+1}號</span><span>${esc(s.name)}</span></a>
+      <button class="quicknav-del" type="button" data-delete-name="${esc(s.name)}" title="從目錄中刪除這間店" aria-label="刪除 ${esc(s.name)}">✕</button>
+    </div>
+  `).join("");
+  el.querySelectorAll("a[data-target]").forEach(a => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      const target = document.getElementById(a.dataset.target);
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+  el.querySelectorAll("[data-delete-name]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const name = btn.dataset.deleteName;
+      if (btn.dataset.confirming === "1") {
+        clearTimeout(Number(btn.dataset.timerId));
+        deleted.add(name);
+        saveDeleted(deleted);
+        renderQuickNav();
+        render();
+        return;
+      }
+      btn.dataset.confirming = "1";
+      btn.textContent = "確定？";
+      btn.classList.add("confirming");
+      const timerId = setTimeout(() => {
+        btn.dataset.confirming = "0";
+        btn.textContent = "✕";
+        btn.classList.remove("confirming");
+      }, 3000);
+      btn.dataset.timerId = String(timerId);
+    });
+  });
+}
+
+renderQuickNav();
+render();
+</script>
+</body>
+</html>
