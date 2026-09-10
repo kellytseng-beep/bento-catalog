@@ -1,0 +1,51 @@
+# 有新店家被加進 index.html 時寄信通知。
+#
+# 只有在 shops 陣列真的多出一家店時才會寄 —— 改價格、改營業時間、刪店都不會觸發。
+#
+# 需要在 Settings → Secrets and variables → Actions 設定三個 secret：
+#   MAIL_USERNAME  寄件用的 Gmail 地址
+#   MAIL_PASSWORD  Gmail「應用程式密碼」（16 碼，不是 Google 登入密碼）
+#   MAIL_TO        收件人，多個用逗號分隔
+#
+# 收件人放 secret 而不是寫在檔案裡，因為這個 repo 是公開的，
+# 把別人的信箱寫進檔案等於公開他們的個資。
+
+name: 新店通知
+
+on:
+  push:
+    branches: [main]
+    paths: ['index.html']
+  workflow_dispatch:
+    inputs:
+      test:
+        description: '測試模式（不管有沒有新店，都拿最後一家店寄一封測試信）'
+        type: boolean
+        default: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # 要有歷史才能跟前一版比對
+
+      - name: 找出新增的店家
+        id: detect
+        run: node .github/scripts/notify.js "${{ github.event.before }}" "${{ github.sha }}" "${{ inputs.test }}"
+
+      - name: 寄信
+        if: steps.detect.outputs.count != '0'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          from: 便當目錄 <${{ secrets.MAIL_USERNAME }}>
+          to: ${{ secrets.MAIL_USERNAME }}     # 真正的收件人放 bcc，彼此看不到對方信箱
+          bcc: ${{ secrets.MAIL_TO }}
+          subject: ${{ steps.detect.outputs.subject }}
+          html_body: file://body.html
