@@ -65,6 +65,9 @@ if (!added.length) {
 const names = added.map(s => s.name).join('、');
 out('subject', (isTest ? '［測試］' : '') + '便當目錄新增了：' + names);
 
+// 給 workflow 拿去輪詢線上網頁用：確認這個店名真的出現在 Pages 上了才寄信
+out('needle', added[0].name);
+
 const rows = added.map(s => {
   const anchor = 'shop-' + (curr.indexOf(s) + 1);
   const sub = [s.area, s.address].filter(Boolean).join('・');

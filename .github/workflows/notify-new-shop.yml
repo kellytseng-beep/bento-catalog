@@ -35,6 +35,26 @@ jobs:
         id: detect
         run: node .github/scripts/notify.js "${{ github.event.before }}" "${{ github.sha }}" "${{ inputs.test }}"
 
+      # 先確認 GitHub Pages 真的更新了再寄信，避免收信的人點進去看到舊版本。
+      # 用輪詢而不是固定等待：通常 30–60 秒就確認完，比死等快，而且是真的驗證過。
+      # 測試模式（手動觸發）沒有改到內容，不需要等。
+      - name: 等 GitHub Pages 更新
+        if: steps.detect.outputs.count != '0' && github.event_name == 'push'
+        env:
+          NEEDLE: ${{ steps.detect.outputs.needle }}
+          SITE: https://kellytseng-beep.github.io/bento-catalog/
+        run: |
+          echo "等待線上網頁出現：$NEEDLE"
+          for i in $(seq 1 60); do
+            if curl -sS -L --max-time 20 "$SITE" | grep -qF "$NEEDLE"; then
+              echo "✓ Pages 已更新（約 $((i * 10)) 秒）"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::等了 10 分鐘，線上網頁仍未出現「$NEEDLE」。不寄信，以免信裡的連結指到舊版本。"
+          exit 1
+
       - name: 寄信
         if: steps.detect.outputs.count != '0'
         uses: dawidd6/action-send-mail@v3
